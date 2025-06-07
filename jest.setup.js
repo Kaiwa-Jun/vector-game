@@ -20,7 +20,7 @@ global.Request = class Request {
     this.body = init.body
     this.headers = new Headers(init.headers)
   }
-  
+
   async json() {
     if (this.body) {
       return JSON.parse(this.body)
@@ -35,7 +35,7 @@ global.Response = class Response {
     this.status = init.status || 200
     this.headers = new Headers(init.headers)
   }
-  
+
   async json() {
     return JSON.parse(this.body)
   }
@@ -45,11 +45,11 @@ global.Headers = class Headers {
   constructor(init = {}) {
     this.map = new Map(Object.entries(init))
   }
-  
+
   get(name) {
     return this.map.get(name.toLowerCase())
   }
-  
+
   set(name, value) {
     this.map.set(name.toLowerCase(), value)
   }
