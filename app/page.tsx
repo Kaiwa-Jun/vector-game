@@ -67,7 +67,6 @@ export default function Home() {
                   >
                     <Sparkles className="w-12 h-12 text-white" />
                   </motion.div>
-                  <div className="absolute -top-2 -right-2 w-6 h-6 bg-yellow-400 rounded-full pulse-glow"></div>
                 </div>
                 <div>
                   <h1 className="text-4xl font-bold bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent text-shadow-lg mb-2">
