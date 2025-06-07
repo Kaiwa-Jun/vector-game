@@ -1,41 +1,47 @@
-'use client';
+'use client'
 
-import { motion } from 'framer-motion';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Settings, HelpCircle, Zap, Target, Sparkles } from 'lucide-react';
-import { useState } from 'react';
-import VectorMazeGame from '@/components/VectorMazeGame';
-import SurvivalGame from '@/components/SurvivalGame';
-import SettingsScreen from '@/components/SettingsScreen';
+import { motion } from 'framer-motion'
+import { Button } from '@/components/ui/button'
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card'
+import { Settings, HelpCircle, Zap, Target, Sparkles } from 'lucide-react'
+import { useState } from 'react'
+import VectorMazeGame from '@/components/VectorMazeGame'
+import SurvivalGame from '@/components/SurvivalGame'
+import SettingsScreen from '@/components/SettingsScreen'
 
-type GameMode = 'title' | 'vector-maze' | 'survival' | 'settings';
+type GameMode = 'title' | 'vector-maze' | 'survival' | 'settings'
 
 export default function Home() {
-  const [currentScreen, setCurrentScreen] = useState<GameMode>('title');
+  const [currentScreen, setCurrentScreen] = useState<GameMode>('title')
 
   const containerVariants = {
     hidden: { opacity: 0, y: 20 },
-    visible: { 
-      opacity: 1, 
+    visible: {
+      opacity: 1,
       y: 0,
-      transition: { duration: 0.6, ease: "easeOut" }
+      transition: { duration: 0.6, ease: 'easeOut' },
     },
-    exit: { 
-      opacity: 0, 
+    exit: {
+      opacity: 0,
       y: -20,
-      transition: { duration: 0.3 }
-    }
-  };
+      transition: { duration: 0.3 },
+    },
+  }
 
   const renderScreen = () => {
     switch (currentScreen) {
       case 'vector-maze':
-        return <VectorMazeGame onBack={() => setCurrentScreen('title')} />;
+        return <VectorMazeGame onBack={() => setCurrentScreen('title')} />
       case 'survival':
-        return <SurvivalGame onBack={() => setCurrentScreen('title')} />;
+        return <SurvivalGame onBack={() => setCurrentScreen('title')} />
       case 'settings':
-        return <SettingsScreen onBack={() => setCurrentScreen('title')} />;
+        return <SettingsScreen onBack={() => setCurrentScreen('title')} />
       default:
         return (
           <motion.div
@@ -53,14 +59,14 @@ export default function Home() {
 
             <div className="w-full max-w-md space-y-8 relative z-10">
               {/* App Title */}
-              <motion.div 
+              <motion.div
                 initial={{ scale: 0.8, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 transition={{ delay: 0.2, duration: 0.5 }}
                 className="text-center space-y-6"
               >
                 <div className="relative">
-                  <motion.div 
+                  <motion.div
                     className="w-24 h-24 mx-auto game-gradient-modern rounded-3xl flex items-center justify-center modern-shadow-lg floating-animation"
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
@@ -85,15 +91,19 @@ export default function Home() {
                   animate={{ x: 0, opacity: 1 }}
                   transition={{ delay: 0.4, duration: 0.5 }}
                 >
-                  <Card className="modern-card cursor-pointer group" 
-                        onClick={() => setCurrentScreen('vector-maze')}>
+                  <Card
+                    className="modern-card cursor-pointer group"
+                    onClick={() => setCurrentScreen('vector-maze')}
+                  >
                     <CardHeader className="pb-3">
                       <div className="flex items-center space-x-4">
                         <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
                           <Target className="w-6 h-6 text-white" />
                         </div>
                         <div className="flex-1">
-                          <CardTitle className="text-xl font-semibold text-gray-800">ベクトル迷路</CardTitle>
+                          <CardTitle className="text-xl font-semibold text-gray-800">
+                            ベクトル迷路
+                          </CardTitle>
                           <CardDescription className="text-sm text-gray-600 font-medium">
                             目標語に向かって言葉を繋げよう
                           </CardDescription>
@@ -116,15 +126,19 @@ export default function Home() {
                   animate={{ x: 0, opacity: 1 }}
                   transition={{ delay: 0.6, duration: 0.5 }}
                 >
-                  <Card className="modern-card cursor-pointer group" 
-                        onClick={() => setCurrentScreen('survival')}>
+                  <Card
+                    className="modern-card cursor-pointer group"
+                    onClick={() => setCurrentScreen('survival')}
+                  >
                     <CardHeader className="pb-3">
                       <div className="flex items-center space-x-4">
                         <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
                           <Zap className="w-6 h-6 text-white" />
                         </div>
                         <div className="flex-1">
-                          <CardTitle className="text-xl font-semibold text-gray-800">類似語サバイバル</CardTitle>
+                          <CardTitle className="text-xl font-semibold text-gray-800">
+                            類似語サバイバル
+                          </CardTitle>
                           <CardDescription className="text-sm text-gray-600 font-medium">
                             関連語を素早く見つけよう
                           </CardDescription>
@@ -144,22 +158,22 @@ export default function Home() {
               </div>
 
               {/* Settings and Help */}
-              <motion.div 
+              <motion.div
                 initial={{ y: 20, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
                 transition={{ delay: 0.8, duration: 0.5 }}
                 className="flex justify-center space-x-4"
               >
-                <Button 
-                  variant="ghost" 
+                <Button
+                  variant="ghost"
                   size="icon"
                   onClick={() => setCurrentScreen('settings')}
                   className="w-14 h-14 rounded-2xl hover:bg-white/50 glass-effect hover:scale-110 transition-all duration-300"
                 >
                   <Settings className="w-6 h-6" />
                 </Button>
-                <Button 
-                  variant="ghost" 
+                <Button
+                  variant="ghost"
                   size="icon"
                   className="w-14 h-14 rounded-2xl hover:bg-white/50 glass-effect hover:scale-110 transition-all duration-300"
                 >
@@ -168,13 +182,9 @@ export default function Home() {
               </motion.div>
             </div>
           </motion.div>
-        );
+        )
     }
-  };
+  }
 
-  return (
-    <div className="min-h-screen">
-      {renderScreen()}
-    </div>
-  );
+  return <div className="min-h-screen">{renderScreen()}</div>
 }

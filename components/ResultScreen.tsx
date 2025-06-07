@@ -1,41 +1,52 @@
-'use client';
+'use client'
 
-import { motion } from 'framer-motion';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Trophy, RotateCcw, Home, Share, Star, Target, Sparkles } from 'lucide-react';
+import { motion } from 'framer-motion'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import {
+  Trophy,
+  RotateCcw,
+  Home,
+  Share,
+  Star,
+  Target,
+  Sparkles,
+} from 'lucide-react'
 
 interface WordHistory {
-  word: string;
-  similarity: number;
+  word: string
+  similarity: number
 }
 
 interface ResultScreenProps {
-  gameType: 'vector-maze' | 'survival';
-  success: boolean;
-  score: number;
-  wordHistory?: WordHistory[];
-  onRestart: () => void;
-  onBack: () => void;
+  gameType: 'vector-maze' | 'survival'
+  success: boolean
+  score: number
+  wordHistory?: WordHistory[]
+  onRestart: () => void
+  onBack: () => void
 }
 
-export default function ResultScreen({ 
-  gameType, 
-  success, 
-  score, 
-  wordHistory = [], 
-  onRestart, 
-  onBack 
+export default function ResultScreen({
+  gameType,
+  success,
+  score,
+  wordHistory = [],
+  onRestart,
+  onBack,
 }: ResultScreenProps) {
-  const shareText = `ベクトル連想ゲームで${score}点を獲得しました！`;
-  const shareUrl = window.location.origin;
+  const shareText = `ベクトル連想ゲームで${score}点を獲得しました！`
+  const shareUrl = window.location.origin
 
   const handleShare = () => {
-    const text = encodeURIComponent(shareText);
-    const url = encodeURIComponent(shareUrl);
-    window.open(`https://twitter.com/intent/tweet?text=${text}&url=${url}`, '_blank');
-  };
+    const text = encodeURIComponent(shareText)
+    const url = encodeURIComponent(shareUrl)
+    window.open(
+      `https://twitter.com/intent/tweet?text=${text}&url=${url}`,
+      '_blank'
+    )
+  }
 
   return (
     <motion.div
@@ -58,18 +69,26 @@ export default function ResultScreen({
           transition={{ delay: 0.2 }}
           className="text-center"
         >
-          <div className={`w-24 h-24 mx-auto rounded-3xl flex items-center justify-center mb-6 modern-shadow-lg ${
-            success ? 'bg-gradient-to-br from-emerald-400 to-green-500' : 'bg-gradient-to-br from-red-400 to-pink-500'
-          }`}>
+          <div
+            className={`w-24 h-24 mx-auto rounded-3xl flex items-center justify-center mb-6 modern-shadow-lg ${
+              success
+                ? 'bg-gradient-to-br from-emerald-400 to-green-500'
+                : 'bg-gradient-to-br from-red-400 to-pink-500'
+            }`}
+          >
             {success ? (
               <Trophy className="w-12 h-12 text-white" />
             ) : (
               <Target className="w-12 h-12 text-white" />
             )}
           </div>
-          <h1 className={`text-4xl font-bold mb-3 ${
-            success ? 'bg-gradient-to-r from-emerald-600 to-green-600 bg-clip-text text-transparent' : 'bg-gradient-to-r from-red-600 to-pink-600 bg-clip-text text-transparent'
-          }`}>
+          <h1
+            className={`text-4xl font-bold mb-3 ${
+              success
+                ? 'bg-gradient-to-r from-emerald-600 to-green-600 bg-clip-text text-transparent'
+                : 'bg-gradient-to-r from-red-600 to-pink-600 bg-clip-text text-transparent'
+            }`}
+          >
             {success ? 'ゲームクリア！' : 'ゲーム終了'}
           </h1>
           <p className="text-gray-600 font-medium">
@@ -81,7 +100,7 @@ export default function ResultScreen({
         <motion.div
           initial={{ scale: 0 }}
           animate={{ scale: 1 }}
-          transition={{ delay: 0.4, type: "spring", stiffness: 200 }}
+          transition={{ delay: 0.4, type: 'spring', stiffness: 200 }}
         >
           <Card className="modern-card">
             <CardContent className="pt-6 text-center">
@@ -123,8 +142,13 @@ export default function ResultScreen({
                     transition={{ delay: 0.9 + index * 0.1 }}
                     className="flex items-center justify-between p-3 glass-effect rounded-xl"
                   >
-                    <span className="font-semibold text-gray-800">{entry.word}</span>
-                    <Badge variant={entry.similarity > 0.7 ? "default" : "secondary"} className="font-semibold">
+                    <span className="font-semibold text-gray-800">
+                      {entry.word}
+                    </span>
+                    <Badge
+                      variant={entry.similarity > 0.7 ? 'default' : 'secondary'}
+                      className="font-semibold"
+                    >
                       {Math.round(entry.similarity * 100)}%
                     </Badge>
                   </motion.div>
@@ -141,20 +165,28 @@ export default function ResultScreen({
           transition={{ delay: 1.0 }}
           className="space-y-3"
         >
-          <Button 
+          <Button
             onClick={handleShare}
             className="w-full success-gradient text-white font-semibold py-3 rounded-xl modern-shadow hover:scale-[1.02] transition-all duration-300"
           >
             <Share className="w-4 h-4 mr-2" />
             結果をシェア
           </Button>
-          
+
           <div className="grid grid-cols-2 gap-3">
-            <Button variant="outline" onClick={onRestart} className="glass-effect rounded-xl hover:scale-105 transition-all duration-300 font-semibold">
+            <Button
+              variant="outline"
+              onClick={onRestart}
+              className="glass-effect rounded-xl hover:scale-105 transition-all duration-300 font-semibold"
+            >
               <RotateCcw className="w-4 h-4 mr-2" />
               もう一度
             </Button>
-            <Button variant="outline" onClick={onBack} className="glass-effect rounded-xl hover:scale-105 transition-all duration-300 font-semibold">
+            <Button
+              variant="outline"
+              onClick={onBack}
+              className="glass-effect rounded-xl hover:scale-105 transition-all duration-300 font-semibold"
+            >
               <Home className="w-4 h-4 mr-2" />
               メニュー
             </Button>
@@ -162,5 +194,5 @@ export default function ResultScreen({
         </motion.div>
       </div>
     </motion.div>
-  );
+  )
 }

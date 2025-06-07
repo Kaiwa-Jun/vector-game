@@ -1,41 +1,44 @@
-'use client';
+'use client'
 
-import { motion } from 'framer-motion';
-import { useEffect, useState } from 'react';
+import { motion } from 'framer-motion'
+import { useEffect, useState } from 'react'
 
 interface SimilarityMeterProps {
-  similarity: number;
-  isAnimating?: boolean;
+  similarity: number
+  isAnimating?: boolean
 }
 
-export default function SimilarityMeter({ similarity, isAnimating = false }: SimilarityMeterProps) {
-  const [displaySimilarity, setDisplaySimilarity] = useState(0);
+export default function SimilarityMeter({
+  similarity,
+  isAnimating = false,
+}: SimilarityMeterProps) {
+  const [displaySimilarity, setDisplaySimilarity] = useState(0)
 
   useEffect(() => {
     if (!isAnimating) {
-      setDisplaySimilarity(similarity);
+      setDisplaySimilarity(similarity)
     }
-  }, [similarity, isAnimating]);
+  }, [similarity, isAnimating])
 
   // 類似度に基づく色の計算
   const getColor = (value: number) => {
-    if (value > 0.8) return '#10b981'; // 緑
-    if (value > 0.5) return '#f59e0b'; // 黄
-    if (value > 0.3) return '#f97316'; // オレンジ
-    return '#ef4444'; // 赤
-  };
+    if (value > 0.8) return '#10b981' // 緑
+    if (value > 0.5) return '#f59e0b' // 黄
+    if (value > 0.3) return '#f97316' // オレンジ
+    return '#ef4444' // 赤
+  }
 
   const getGradientColor = (value: number) => {
-    if (value > 0.8) return 'from-emerald-400 to-green-500';
-    if (value > 0.5) return 'from-yellow-400 to-orange-500';
-    if (value > 0.3) return 'from-orange-400 to-red-500';
-    return 'from-red-400 to-pink-500';
-  };
+    if (value > 0.8) return 'from-emerald-400 to-green-500'
+    if (value > 0.5) return 'from-yellow-400 to-orange-500'
+    if (value > 0.3) return 'from-orange-400 to-red-500'
+    return 'from-red-400 to-pink-500'
+  }
 
   // 角度の計算（0度から180度）
-  const angle = displaySimilarity * 180;
-  const needleColor = getColor(displaySimilarity);
-  const gradientClass = getGradientColor(displaySimilarity);
+  const angle = displaySimilarity * 180
+  const needleColor = getColor(displaySimilarity)
+  const gradientClass = getGradientColor(displaySimilarity)
 
   return (
     <div className="flex flex-col items-center space-y-6">
@@ -55,7 +58,7 @@ export default function SimilarityMeter({ similarity, isAnimating = false }: Sim
             strokeWidth="4"
             strokeLinecap="round"
           />
-          
+
           {/* 背景の半円 */}
           <path
             d="M 32 116 A 112 112 0 0 1 256 116"
@@ -64,7 +67,7 @@ export default function SimilarityMeter({ similarity, isAnimating = false }: Sim
             strokeWidth="12"
             strokeLinecap="round"
           />
-          
+
           {/* 進捗の半円 */}
           <motion.path
             d="M 32 116 A 112 112 0 0 1 256 116"
@@ -74,20 +77,22 @@ export default function SimilarityMeter({ similarity, isAnimating = false }: Sim
             strokeLinecap="round"
             strokeDasharray="351.858" // 半円の全周
             initial={{ strokeDashoffset: 351.858 }}
-            animate={{ 
-              strokeDashoffset: isAnimating ? 351.858 : 351.858 - (displaySimilarity * 351.858)
+            animate={{
+              strokeDashoffset: isAnimating
+                ? 351.858
+                : 351.858 - displaySimilarity * 351.858,
             }}
-            transition={{ duration: 1.2, ease: "easeOut" }}
+            transition={{ duration: 1.2, ease: 'easeOut' }}
           />
 
           {/* 目盛り */}
           {[0, 0.25, 0.5, 0.75, 1].map((value, index) => {
-            const tickAngle = value * 180;
-            const x1 = 144 + 100 * Math.cos((tickAngle - 90) * Math.PI / 180);
-            const y1 = 116 + 100 * Math.sin((tickAngle - 90) * Math.PI / 180);
-            const x2 = 144 + 112 * Math.cos((tickAngle - 90) * Math.PI / 180);
-            const y2 = 116 + 112 * Math.sin((tickAngle - 90) * Math.PI / 180);
-            
+            const tickAngle = value * 180
+            const x1 = 144 + 100 * Math.cos(((tickAngle - 90) * Math.PI) / 180)
+            const y1 = 116 + 100 * Math.sin(((tickAngle - 90) * Math.PI) / 180)
+            const x2 = 144 + 112 * Math.cos(((tickAngle - 90) * Math.PI) / 180)
+            const y2 = 116 + 112 * Math.sin(((tickAngle - 90) * Math.PI) / 180)
+
             return (
               <line
                 key={index}
@@ -99,17 +104,17 @@ export default function SimilarityMeter({ similarity, isAnimating = false }: Sim
                 strokeWidth="3"
                 strokeLinecap="round"
               />
-            );
+            )
           })}
 
           {/* 針 */}
           <motion.g
             initial={{ rotate: 0 }}
-            animate={{ 
-              rotate: isAnimating ? 0 : angle
+            animate={{
+              rotate: isAnimating ? 0 : angle,
             }}
-            transition={{ duration: 1.2, ease: "easeInOut" }}
-            style={{ transformOrigin: "144px 116px" }}
+            transition={{ duration: 1.2, ease: 'easeInOut' }}
+            style={{ transformOrigin: '144px 116px' }}
           >
             <line
               x1="144"
@@ -131,27 +136,60 @@ export default function SimilarityMeter({ similarity, isAnimating = false }: Sim
           </motion.g>
 
           {/* ラベル */}
-          <text x="32" y="135" textAnchor="middle" className="text-sm fill-gray-600 font-semibold">
+          <text
+            x="32"
+            y="135"
+            textAnchor="middle"
+            className="text-sm fill-gray-600 font-semibold"
+          >
             0%
           </text>
-          <text x="144" y="30" textAnchor="middle" className="text-sm fill-gray-600 font-semibold">
+          <text
+            x="144"
+            y="30"
+            textAnchor="middle"
+            className="text-sm fill-gray-600 font-semibold"
+          >
             50%
           </text>
-          <text x="256" y="135" textAnchor="middle" className="text-sm fill-gray-600 font-semibold">
+          <text
+            x="256"
+            y="135"
+            textAnchor="middle"
+            className="text-sm fill-gray-600 font-semibold"
+          >
             100%
           </text>
 
           {/* グラデーション定義 */}
           <defs>
-            <linearGradient id="outerGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+            <linearGradient
+              id="outerGradient"
+              x1="0%"
+              y1="0%"
+              x2="100%"
+              y2="0%"
+            >
               <stop offset="0%" stopColor="#667eea" />
               <stop offset="100%" stopColor="#764ba2" />
             </linearGradient>
-            <linearGradient id="progressGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+            <linearGradient
+              id="progressGradient"
+              x1="0%"
+              y1="0%"
+              x2="100%"
+              y2="0%"
+            >
               <stop offset="0%" stopColor={getColor(displaySimilarity)} />
               <stop offset="100%" stopColor={getColor(displaySimilarity)} />
             </linearGradient>
-            <linearGradient id="needleGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+            <linearGradient
+              id="needleGradient"
+              x1="0%"
+              y1="0%"
+              x2="0%"
+              y2="100%"
+            >
               <stop offset="0%" stopColor="#1f2937" />
               <stop offset="100%" stopColor="#374151" />
             </linearGradient>
@@ -160,7 +198,7 @@ export default function SimilarityMeter({ similarity, isAnimating = false }: Sim
               <stop offset="100%" stopColor="#e5e7eb" />
             </radialGradient>
             <filter id="dropShadow">
-              <feDropShadow dx="0" dy="2" stdDeviation="3" floodOpacity="0.3"/>
+              <feDropShadow dx="0" dy="2" stdDeviation="3" floodOpacity="0.3" />
             </filter>
           </defs>
         </svg>
@@ -218,5 +256,5 @@ export default function SimilarityMeter({ similarity, isAnimating = false }: Sim
         )}
       </div>
     </div>
-  );
+  )
 }
