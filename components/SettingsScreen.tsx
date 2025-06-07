@@ -1,21 +1,27 @@
-'use client';
+'use client'
 
-import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Slider } from '@/components/ui/slider';
-import { Switch } from '@/components/ui/switch';
-import { ArrowLeft, Volume2, Clock, AlertTriangle, Settings } from 'lucide-react';
+import { useState, useEffect } from 'react'
+import { motion } from 'framer-motion'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Slider } from '@/components/ui/slider'
+import { Switch } from '@/components/ui/switch'
+import {
+  ArrowLeft,
+  Volume2,
+  Clock,
+  AlertTriangle,
+  Settings,
+} from 'lucide-react'
 
 interface SettingsScreenProps {
-  onBack: () => void;
+  onBack: () => void
 }
 
 interface Settings {
-  timeLimit: number;
-  soundEnabled: boolean;
-  difficulty: 'easy' | 'normal' | 'hard';
+  timeLimit: number
+  soundEnabled: boolean
+  difficulty: 'easy' | 'normal' | 'hard'
 }
 
 export default function SettingsScreen({ onBack }: SettingsScreenProps) {
@@ -23,39 +29,41 @@ export default function SettingsScreen({ onBack }: SettingsScreenProps) {
     timeLimit: 30,
     soundEnabled: true,
     difficulty: 'normal',
-  });
+  })
 
   // ローカルストレージから設定を読み込み
   useEffect(() => {
-    const savedSettings = localStorage.getItem('vectorGameSettings');
+    const savedSettings = localStorage.getItem('vectorGameSettings')
     if (savedSettings) {
-      setSettings(JSON.parse(savedSettings));
+      setSettings(JSON.parse(savedSettings))
     }
-  }, []);
+  }, [])
 
   // 設定が変更されたときにローカルストレージに保存
   useEffect(() => {
-    localStorage.setItem('vectorGameSettings', JSON.stringify(settings));
-  }, [settings]);
+    localStorage.setItem('vectorGameSettings', JSON.stringify(settings))
+  }, [settings])
 
   const handleTimeLimitChange = (value: number[]) => {
-    setSettings(prev => ({ ...prev, timeLimit: value[0] }));
-  };
+    setSettings(prev => ({ ...prev, timeLimit: value[0] || 60 }))
+  }
 
   const handleSoundToggle = (checked: boolean) => {
-    setSettings(prev => ({ ...prev, soundEnabled: checked }));
-  };
+    setSettings(prev => ({ ...prev, soundEnabled: checked }))
+  }
 
   const handleDifficultyChange = (difficulty: 'easy' | 'normal' | 'hard') => {
-    setSettings(prev => ({ ...prev, difficulty }));
-  };
+    setSettings(prev => ({ ...prev, difficulty }))
+  }
 
   const handleResetData = () => {
-    if (confirm('すべてのデータをリセットしますか？この操作は取り消せません。')) {
-      localStorage.clear();
-      alert('データがリセットされました。');
+    if (
+      confirm('すべてのデータをリセットしますか？この操作は取り消せません。')
+    ) {
+      localStorage.clear()
+      alert('データがリセットされました。')
     }
-  };
+  }
 
   return (
     <motion.div
@@ -74,7 +82,11 @@ export default function SettingsScreen({ onBack }: SettingsScreenProps) {
       <div className="max-w-2xl mx-auto space-y-6 relative z-10">
         {/* Header */}
         <div className="flex items-center gap-4">
-          <Button variant="ghost" onClick={onBack} className="flex items-center gap-2 glass-effect rounded-xl px-4 py-2 hover:scale-105 transition-all duration-300">
+          <Button
+            variant="ghost"
+            onClick={onBack}
+            className="flex items-center gap-2 glass-effect rounded-xl px-4 py-2 hover:scale-105 transition-all duration-300"
+          >
             <ArrowLeft className="w-4 h-4" />
             戻る
           </Button>
@@ -82,7 +94,9 @@ export default function SettingsScreen({ onBack }: SettingsScreenProps) {
             <div className="w-10 h-10 bg-gradient-to-br from-slate-500 to-gray-600 rounded-2xl flex items-center justify-center">
               <Settings className="w-5 h-5 text-white" />
             </div>
-            <h1 className="text-3xl font-bold bg-gradient-to-r from-slate-600 to-gray-700 bg-clip-text text-transparent">設定</h1>
+            <h1 className="text-3xl font-bold bg-gradient-to-r from-slate-600 to-gray-700 bg-clip-text text-transparent">
+              設定
+            </h1>
           </div>
         </div>
 
@@ -104,8 +118,12 @@ export default function SettingsScreen({ onBack }: SettingsScreenProps) {
             <CardContent className="space-y-4">
               <div className="space-y-3">
                 <div className="flex justify-between">
-                  <span className="text-sm text-gray-600 font-medium">制限時間</span>
-                  <span className="font-bold text-lg">{settings.timeLimit}秒</span>
+                  <span className="text-sm text-gray-600 font-medium">
+                    制限時間
+                  </span>
+                  <span className="font-bold text-lg">
+                    {settings.timeLimit}秒
+                  </span>
                 </div>
                 <Slider
                   value={[settings.timeLimit]}
@@ -143,7 +161,9 @@ export default function SettingsScreen({ onBack }: SettingsScreenProps) {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="font-semibold text-gray-800">効果音</p>
-                  <p className="text-sm text-gray-600 font-medium">ゲーム中の効果音のオン/オフ</p>
+                  <p className="text-sm text-gray-600 font-medium">
+                    ゲーム中の効果音のオン/オフ
+                  </p>
                 </div>
                 <Switch
                   checked={settings.soundEnabled}
@@ -171,14 +191,16 @@ export default function SettingsScreen({ onBack }: SettingsScreenProps) {
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-3 gap-3">
-                {(['easy', 'normal', 'hard'] as const).map((difficulty) => (
+                {(['easy', 'normal', 'hard'] as const).map(difficulty => (
                   <Button
                     key={difficulty}
-                    variant={settings.difficulty === difficulty ? "default" : "outline"}
+                    variant={
+                      settings.difficulty === difficulty ? 'default' : 'outline'
+                    }
                     onClick={() => handleDifficultyChange(difficulty)}
                     className={`h-20 flex flex-col rounded-xl font-semibold transition-all duration-300 ${
-                      settings.difficulty === difficulty 
-                        ? 'game-gradient-modern text-white modern-shadow scale-105' 
+                      settings.difficulty === difficulty
+                        ? 'game-gradient-modern text-white modern-shadow scale-105'
                         : 'glass-effect hover:scale-105'
                     }`}
                   >
@@ -220,8 +242,8 @@ export default function SettingsScreen({ onBack }: SettingsScreenProps) {
                   すべてのゲームデータ、スコア、設定がリセットされます。
                   この操作は取り消すことができません。
                 </p>
-                <Button 
-                  variant="destructive" 
+                <Button
+                  variant="destructive"
                   onClick={handleResetData}
                   className="w-full error-gradient font-semibold py-3 rounded-xl modern-shadow hover:scale-[1.02] transition-all duration-300"
                 >
@@ -233,5 +255,5 @@ export default function SettingsScreen({ onBack }: SettingsScreenProps) {
         </motion.div>
       </div>
     </motion.div>
-  );
+  )
 }
