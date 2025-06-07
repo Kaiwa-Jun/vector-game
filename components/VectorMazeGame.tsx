@@ -1,113 +1,120 @@
-'use client';
+'use client'
 
-import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Send, RotateCcw, ArrowRight, Sparkles } from 'lucide-react';
-import SimilarityMeter from '@/components/SimilarityMeter';
-import ResultScreen from '@/components/ResultScreen';
+import { useState, useEffect } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import { ArrowLeft, Send, RotateCcw, ArrowRight, Sparkles } from 'lucide-react'
+import SimilarityMeter from '@/components/SimilarityMeter'
+import ResultScreen from '@/components/ResultScreen'
 
 interface WordHistory {
-  word: string;
-  similarity: number;
+  word: string
+  similarity: number
 }
 
 interface VectorMazeGameProps {
-  onBack: () => void;
+  onBack: () => void
 }
 
 // モックデータ
 const mockMazeData = {
-  startWord: "猫",
-  goalWord: "宇宙",
+  startWord: '猫',
+  goalWord: '宇宙',
   maxAttempts: 5,
-};
+}
 
 // 語句の類似度を計算する関数（モック）
 const calculateSimilarity = (inputWord: string, attempts: number): number => {
   const similarities: { [key: string]: number } = {
-    "犬": 0.15,
-    "動物": 0.25,
-    "ペット": 0.18,
-    "生き物": 0.35,
-    "地球": 0.45,
-    "惑星": 0.65,
-    "星": 0.75,
-    "天体": 0.80,
-    "宇宙": 1.0,
-    "空": 0.55,
-    "夜": 0.48,
-    "月": 0.62,
-    "太陽": 0.58,
-    "光": 0.52,
-  };
-  
-  return similarities[inputWord] || Math.random() * 0.4 + 0.1;
-};
+    犬: 0.15,
+    動物: 0.25,
+    ペット: 0.18,
+    生き物: 0.35,
+    地球: 0.45,
+    惑星: 0.65,
+    星: 0.75,
+    天体: 0.8,
+    宇宙: 1.0,
+    空: 0.55,
+    夜: 0.48,
+    月: 0.62,
+    太陽: 0.58,
+    光: 0.52,
+  }
+
+  return similarities[inputWord] || Math.random() * 0.4 + 0.1
+}
 
 export default function VectorMazeGame({ onBack }: VectorMazeGameProps) {
-  const [inputWord, setInputWord] = useState('');
-  const [wordHistory, setWordHistory] = useState<WordHistory[]>([]);
-  const [currentSimilarity, setCurrentSimilarity] = useState(0);
-  const [attempts, setAttempts] = useState(0);
-  const [gameStatus, setGameStatus] = useState<'playing' | 'won' | 'lost'>('playing');
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [wordChain, setWordChain] = useState<string[]>(['', '', '']); // 3つの中間ステップ
+  const [inputWord, setInputWord] = useState('')
+  const [wordHistory, setWordHistory] = useState<WordHistory[]>([])
+  const [currentSimilarity, setCurrentSimilarity] = useState(0)
+  const [attempts, setAttempts] = useState(0)
+  const [gameStatus, setGameStatus] = useState<'playing' | 'won' | 'lost'>(
+    'playing'
+  )
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [wordChain, setWordChain] = useState<string[]>(['', '', '']) // 3つの中間ステップ
 
   const handleSubmit = async () => {
-    if (!inputWord.trim() || isSubmitting || attempts >= mockMazeData.maxAttempts) return;
-    
-    setIsSubmitting(true);
-    
+    if (
+      !inputWord.trim() ||
+      isSubmitting ||
+      attempts >= mockMazeData.maxAttempts
+    )
+      return
+
+    setIsSubmitting(true)
+
     // 類似度計算（模擬的な遅延）
-    await new Promise(resolve => setTimeout(resolve, 800));
-    
-    const similarity = calculateSimilarity(inputWord, attempts);
-    setCurrentSimilarity(similarity);
-    
+    await new Promise(resolve => setTimeout(resolve, 800))
+
+    const similarity = calculateSimilarity(inputWord, attempts)
+    setCurrentSimilarity(similarity)
+
     const newEntry: WordHistory = {
       word: inputWord,
-      similarity
-    };
-    
-    setWordHistory(prev => [...prev, newEntry]);
-    
+      similarity,
+    }
+
+    setWordHistory(prev => [...prev, newEntry])
+
     // 単語チェーンに追加
-    const newChain = [...wordChain];
-    newChain[attempts] = inputWord;
-    setWordChain(newChain);
-    
-    setAttempts(prev => prev + 1);
-    
+    const newChain = [...wordChain]
+    newChain[attempts] = inputWord
+    setWordChain(newChain)
+
+    setAttempts(prev => prev + 1)
+
     // ゲーム終了判定
     if (similarity >= 0.95) {
-      setGameStatus('won');
+      setGameStatus('won')
     } else if (attempts + 1 >= mockMazeData.maxAttempts) {
-      setGameStatus('lost');
+      setGameStatus('lost')
     }
-    
-    setInputWord('');
-    setIsSubmitting(false);
-  };
+
+    setInputWord('')
+    setIsSubmitting(false)
+  }
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
-      handleSubmit();
+      handleSubmit()
     }
-  };
+  }
 
   const resetGame = () => {
-    setInputWord('');
-    setWordHistory([]);
-    setCurrentSimilarity(0);
-    setAttempts(0);
-    setGameStatus('playing');
-    setIsSubmitting(false);
-    setWordChain(['', '', '']);
-  };
+    setInputWord('')
+    setWordHistory([])
+    setCurrentSimilarity(0)
+    setAttempts(0)
+    setGameStatus('playing')
+    setIsSubmitting(false)
+    setWordChain(['', '', ''])
+  }
 
   if (gameStatus !== 'playing') {
     return (
@@ -119,7 +126,7 @@ export default function VectorMazeGame({ onBack }: VectorMazeGameProps) {
         onRestart={resetGame}
         onBack={onBack}
       />
-    );
+    )
   }
 
   return (
@@ -139,15 +146,27 @@ export default function VectorMazeGame({ onBack }: VectorMazeGameProps) {
       <div className="max-w-4xl mx-auto space-y-6 relative z-10">
         {/* Header */}
         <div className="flex items-center justify-between">
-          <Button variant="ghost" onClick={onBack} className="flex items-center gap-2 glass-effect rounded-xl px-4 py-2 hover:scale-105 transition-all duration-300">
+          <Button
+            variant="ghost"
+            onClick={onBack}
+            className="flex items-center gap-2 glass-effect rounded-xl px-4 py-2 hover:scale-105 transition-all duration-300"
+          >
             <ArrowLeft className="w-4 h-4" />
             戻る
           </Button>
           <div className="flex items-center gap-4">
-            <Badge variant="secondary" className="text-sm glass-effect px-4 py-2 rounded-xl font-semibold">
+            <Badge
+              variant="secondary"
+              className="text-sm glass-effect px-4 py-2 rounded-xl font-semibold"
+            >
               {attempts} / {mockMazeData.maxAttempts}
             </Badge>
-            <Button variant="outline" size="sm" onClick={resetGame} className="gap-2 glass-effect rounded-xl hover:scale-105 transition-all duration-300">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={resetGame}
+              className="gap-2 glass-effect rounded-xl hover:scale-105 transition-all duration-300"
+            >
               <RotateCcw className="w-4 h-4" />
               リセット
             </Button>
@@ -177,15 +196,13 @@ export default function VectorMazeGame({ onBack }: VectorMazeGameProps) {
                   <ArrowRight className="w-5 h-5 text-gray-400" />
                   <motion.div
                     initial={{ scale: 0.8, opacity: 0 }}
-                    animate={{ 
-                      scale: 1, 
-                      opacity: 1
+                    animate={{
+                      scale: 1,
+                      opacity: 1,
                     }}
                     transition={{ delay: index * 0.1 }}
                     className={`px-4 py-2 rounded-xl font-semibold text-lg min-w-[100px] text-center transition-all duration-300 ${
-                      word 
-                        ? 'word-chip' 
-                        : 'word-chip-empty'
+                      word ? 'word-chip' : 'word-chip-empty'
                     }`}
                   >
                     {word || '？'}
@@ -219,7 +236,10 @@ export default function VectorMazeGame({ onBack }: VectorMazeGameProps) {
             animate={{ opacity: 1, y: 0 }}
             className="text-center"
           >
-            <Badge variant="outline" className="text-sm glass-effect px-4 py-2 rounded-xl font-semibold">
+            <Badge
+              variant="outline"
+              className="text-sm glass-effect px-4 py-2 rounded-xl font-semibold"
+            >
               ステップ {attempts + 1} / 3
             </Badge>
           </motion.div>
@@ -228,7 +248,10 @@ export default function VectorMazeGame({ onBack }: VectorMazeGameProps) {
         {/* Similarity Meter */}
         <Card className="modern-card">
           <CardContent className="pt-6">
-            <SimilarityMeter similarity={currentSimilarity} isAnimating={isSubmitting} />
+            <SimilarityMeter
+              similarity={currentSimilarity}
+              isAnimating={isSubmitting}
+            />
           </CardContent>
         </Card>
 
@@ -238,22 +261,21 @@ export default function VectorMazeGame({ onBack }: VectorMazeGameProps) {
             <div className="space-y-4">
               <div className="text-center">
                 <p className="text-sm text-gray-600 mb-3 font-medium">
-                  {attempts < 3 
+                  {attempts < 3
                     ? `${attempts + 1}番目の言葉を入力してください`
-                    : '最後の言葉を入力してください'
-                  }
+                    : '最後の言葉を入力してください'}
                 </p>
               </div>
               <div className="flex gap-3">
                 <Input
                   value={inputWord}
-                  onChange={(e) => setInputWord(e.target.value)}
+                  onChange={e => setInputWord(e.target.value)}
                   onKeyPress={handleKeyPress}
                   placeholder="関連する言葉を入力してください..."
                   disabled={isSubmitting}
                   className="text-lg modern-input rounded-xl py-3 font-medium"
                 />
-                <Button 
+                <Button
                   onClick={handleSubmit}
                   disabled={!inputWord.trim() || isSubmitting}
                   className="px-6 game-gradient-modern rounded-xl modern-shadow hover:scale-105 transition-all duration-300"
@@ -261,7 +283,11 @@ export default function VectorMazeGame({ onBack }: VectorMazeGameProps) {
                   {isSubmitting ? (
                     <motion.div
                       animate={{ rotate: 360 }}
-                      transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                      transition={{
+                        duration: 1,
+                        repeat: Infinity,
+                        ease: 'linear',
+                      }}
                     >
                       <RotateCcw className="w-4 h-4" />
                     </motion.div>
@@ -296,21 +322,28 @@ export default function VectorMazeGame({ onBack }: VectorMazeGameProps) {
                       className="flex items-center justify-between p-4 glass-effect rounded-xl"
                     >
                       <div className="flex items-center gap-3">
-                        <Badge variant="outline" className="text-xs font-semibold">
+                        <Badge
+                          variant="outline"
+                          className="text-xs font-semibold"
+                        >
                           {index + 1}
                         </Badge>
-                        <span className="font-semibold text-gray-800">{entry.word}</span>
+                        <span className="font-semibold text-gray-800">
+                          {entry.word}
+                        </span>
                       </div>
                       <div className="flex items-center gap-3">
                         <div className="w-20 h-3 bg-gray-200 rounded-full overflow-hidden">
                           <motion.div
                             initial={{ width: 0 }}
                             animate={{ width: `${entry.similarity * 100}%` }}
-                            transition={{ duration: 0.8, ease: "easeOut" }}
+                            transition={{ duration: 0.8, ease: 'easeOut' }}
                             className={`h-full rounded-full ${
-                              entry.similarity > 0.8 ? 'bg-gradient-to-r from-green-400 to-emerald-500' :
-                              entry.similarity > 0.5 ? 'bg-gradient-to-r from-yellow-400 to-orange-500' : 
-                              'bg-gradient-to-r from-red-400 to-pink-500'
+                              entry.similarity > 0.8
+                                ? 'bg-gradient-to-r from-green-400 to-emerald-500'
+                                : entry.similarity > 0.5
+                                  ? 'bg-gradient-to-r from-yellow-400 to-orange-500'
+                                  : 'bg-gradient-to-r from-red-400 to-pink-500'
                             }`}
                           />
                         </div>
@@ -327,5 +360,5 @@ export default function VectorMazeGame({ onBack }: VectorMazeGameProps) {
         </AnimatePresence>
       </div>
     </motion.div>
-  );
+  )
 }
