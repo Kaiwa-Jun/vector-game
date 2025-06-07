@@ -37,14 +37,14 @@ jobs:
         run: npm run format:check
 
       - name: Run unit tests
-        run: npm run test:coverage
+        run: npm test
 
-      - name: Upload coverage reports
-        uses: codecov/codecov-action@v3
-        with:
-          file: ./coverage/lcov.info
-          flags: unittests
-          name: codecov-umbrella
+      # - name: Upload coverage reports
+      #   uses: codecov/codecov-action@v3
+      #   with:
+      #     file: ./coverage/lcov.info
+      #     flags: unittests
+      #     name: codecov-umbrella
 
   e2e-tests:
     runs-on: ubuntu-latest
