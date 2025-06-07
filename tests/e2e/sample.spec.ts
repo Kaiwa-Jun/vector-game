@@ -5,7 +5,7 @@ test.describe('Sample E2E Tests', () => {
     await page.goto('/')
 
     // ページタイトルが存在することを確認
-    await expect(page).toHaveTitle(/Vector Game/)
+    await expect(page).toHaveTitle(/ベクトル連想ゲーム/)
 
     // 基本的な要素が表示されることを確認
     await expect(page.locator('body')).toBeVisible()
