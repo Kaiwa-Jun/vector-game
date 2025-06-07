@@ -1,5 +1,60 @@
 import '@testing-library/jest-dom'
 
+// Set up environment variables for tests
+process.env.OPENAI_API_KEY = 'test-api-key'
+process.env.NEXT_PUBLIC_SUPABASE_URL = 'https://test.supabase.co'
+process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = 'test-anon-key'
+
+// Mock console to reduce noise in tests
+global.console = {
+  ...console,
+  warn: jest.fn(),
+  error: jest.fn(),
+}
+
+// Mock Next.js Request and Response
+global.Request = class Request {
+  constructor(url, init = {}) {
+    this.url = url
+    this.method = init.method || 'GET'
+    this.body = init.body
+    this.headers = new Headers(init.headers)
+  }
+  
+  async json() {
+    if (this.body) {
+      return JSON.parse(this.body)
+    }
+    return {}
+  }
+}
+
+global.Response = class Response {
+  constructor(body, init = {}) {
+    this.body = body
+    this.status = init.status || 200
+    this.headers = new Headers(init.headers)
+  }
+  
+  async json() {
+    return JSON.parse(this.body)
+  }
+}
+
+global.Headers = class Headers {
+  constructor(init = {}) {
+    this.map = new Map(Object.entries(init))
+  }
+  
+  get(name) {
+    return this.map.get(name.toLowerCase())
+  }
+  
+  set(name, value) {
+    this.map.set(name.toLowerCase(), value)
+  }
+}
+
 // Mock IntersectionObserver
 global.IntersectionObserver = class IntersectionObserver {
   constructor() {}
