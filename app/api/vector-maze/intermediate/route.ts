@@ -15,13 +15,28 @@ const IntermediateWordSchema = z.object({
 })
 
 export async function POST(request: NextRequest) {
+  console.log('🎮 [Vector Maze Intermediate] API呼び出し開始')
+
   try {
     const body = await request.json()
+    console.log('🎮 [Vector Maze Intermediate] リクエストボディ:', body)
+
     const validatedData = IntermediateWordSchema.parse(body)
+    console.log(
+      '🎮 [Vector Maze Intermediate] バリデーション成功:',
+      validatedData
+    )
 
     // Get current game session
+    console.log('🎮 [Vector Maze Intermediate] ゲームセッション取得中...', {
+      gameId: validatedData.gameId,
+    })
+
     const gameSession = await getVectorMazeSession(validatedData.gameId)
     if (!gameSession) {
+      console.error(
+        '❌ [Vector Maze Intermediate] ゲームセッションが見つかりません'
+      )
       return NextResponse.json(
         { error: 'Game session not found' },
         { status: 404 }
@@ -30,11 +45,24 @@ export async function POST(request: NextRequest) {
 
     const gameData = gameSession.session_data as any
     if (!gameData || !gameData.isActive) {
+      console.error('❌ [Vector Maze Intermediate] ゲームが非アクティブです')
       return NextResponse.json({ error: 'Game is not active' }, { status: 400 })
     }
 
+    console.log('🎮 [Vector Maze Intermediate] 現在のゲーム状態:', {
+      startWord: gameData.startWord,
+      goalWord: gameData.goalWord,
+      currentIntermediateWords: gameData.intermediateWords,
+      requiredIntermediateWords: gameData.requiredIntermediateWords,
+      difficulty: gameData.difficulty,
+    })
+
     // Validate position
     if (validatedData.position >= gameData.requiredIntermediateWords) {
+      console.error('❌ [Vector Maze Intermediate] 無効なポジション:', {
+        position: validatedData.position,
+        required: gameData.requiredIntermediateWords,
+      })
       return NextResponse.json({ error: 'Invalid position' }, { status: 400 })
     }
 
@@ -45,11 +73,21 @@ export async function POST(request: NextRequest) {
         : gameData.intermediateWords[validatedData.position - 1]
 
     if (!previousWord) {
+      console.error('❌ [Vector Maze Intermediate] 前の単語が見つかりません:', {
+        position: validatedData.position,
+        intermediateWords: gameData.intermediateWords,
+      })
       return NextResponse.json(
         { error: 'Previous word not found' },
         { status: 400 }
       )
     }
+
+    console.log('🎮 [Vector Maze Intermediate] 中間語検証開始:', {
+      previousWord,
+      inputWord: validatedData.word,
+      position: validatedData.position,
+    })
 
     // Validate the intermediate word
     const validation = await validateIntermediateWord(
@@ -57,12 +95,15 @@ export async function POST(request: NextRequest) {
       validatedData.word
     )
 
+    console.log('🎮 [Vector Maze Intermediate] 中間語検証結果:', validation)
+
     if (!validation.isValid) {
       const response: IntermediateWordResponse = {
         isValid: false,
         message: validation.message,
         isComplete: false,
       }
+      console.log('🎮 [Vector Maze Intermediate] 検証失敗レスポンス:', response)
       return NextResponse.json(response)
     }
 
@@ -70,21 +111,41 @@ export async function POST(request: NextRequest) {
     const newIntermediateWords = [...gameData.intermediateWords]
     newIntermediateWords[validatedData.position] = validatedData.word
 
+    console.log('🎮 [Vector Maze Intermediate] 中間語配列更新:', {
+      before: gameData.intermediateWords,
+      after: newIntermediateWords,
+    })
+
     // Check if all intermediate words are filled
     const isComplete =
       newIntermediateWords.length === gameData.requiredIntermediateWords &&
       newIntermediateWords.every(word => word && word.trim().length > 0)
 
+    console.log('🎮 [Vector Maze Intermediate] 完了チェック:', {
+      isComplete,
+      currentLength: newIntermediateWords.length,
+      required: gameData.requiredIntermediateWords,
+      allFilled: newIntermediateWords.every(
+        word => word && word.trim().length > 0
+      ),
+    })
+
     let chainValidation = undefined
 
     if (isComplete) {
       // Validate the complete word chain
+      console.log('🎮 [Vector Maze Intermediate] 完全チェーン検証開始...')
       const difficultySettings = getDifficultySettings(gameData.difficulty)
       chainValidation = await validateWordChain(
         gameData.startWord,
         newIntermediateWords,
         gameData.goalWord,
         difficultySettings.adjacencyTolerance
+      )
+
+      console.log(
+        '🎮 [Vector Maze Intermediate] 完全チェーン検証結果:',
+        chainValidation
       )
     }
 
@@ -95,6 +156,7 @@ export async function POST(request: NextRequest) {
       moves: [...gameData.moves, validatedData.word],
     }
 
+    console.log('🎮 [Vector Maze Intermediate] ゲームセッション更新中...')
     await updateVectorMazeSession(validatedData.gameId, updatedGameData)
 
     const response: IntermediateWordResponse = {
@@ -110,8 +172,11 @@ export async function POST(request: NextRequest) {
         : undefined,
     }
 
+    console.log('🎮 [Vector Maze Intermediate] 成功レスポンス:', response)
     return NextResponse.json(response)
   } catch (error: any) {
+    console.error('❌ [Vector Maze Intermediate] エラー発生:', error)
+
     if (error instanceof z.ZodError) {
       return NextResponse.json(
         { error: 'Invalid request data', details: error.errors },
@@ -119,7 +184,6 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    console.error('Error processing intermediate word:', error)
     return NextResponse.json(
       { error: 'Internal server error', details: error?.message },
       { status: 500 }

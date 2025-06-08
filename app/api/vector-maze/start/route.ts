@@ -13,13 +13,31 @@ const GameStartSchema = z.object({
 })
 
 export async function POST(request: NextRequest) {
+  console.log('🎮 [Vector Maze Start] API呼び出し開始')
+
   try {
     const body = await request.json()
+    console.log('🎮 [Vector Maze Start] リクエストボディ:', body)
+
     const validatedData = GameStartSchema.parse(body)
+    console.log('🎮 [Vector Maze Start] バリデーション成功:', validatedData)
 
     // Generate word pair based on difficulty
+    console.log('🎮 [Vector Maze Start] 単語ペア生成開始...', {
+      difficulty: validatedData.difficulty,
+    })
+
     const wordPair = await generateWordPair(validatedData.difficulty)
     const difficultySettings = getDifficultySettings(validatedData.difficulty)
+
+    console.log('🎮 [Vector Maze Start] 単語ペア生成成功:', {
+      startWord: wordPair.startWord,
+      goalWord: wordPair.goalWord,
+      targetSimilarity: wordPair.targetSimilarity,
+      requiredIntermediateWords: wordPair.requiredIntermediateWords,
+    })
+
+    console.log('🎮 [Vector Maze Start] 難易度設定:', difficultySettings)
 
     // Create game session data
     const gameData: VectorMazeGameData = {
@@ -35,7 +53,12 @@ export async function POST(request: NextRequest) {
     }
 
     // Create game session
+    console.log('🎮 [Vector Maze Start] ゲームセッション作成中...')
     const gameSession = await createVectorMazeSession(gameData)
+
+    console.log('🎮 [Vector Maze Start] ゲームセッション作成成功:', {
+      gameId: gameSession.id,
+    })
 
     const response: GameStartResponse = {
       gameId: gameSession.id,
@@ -48,8 +71,11 @@ export async function POST(request: NextRequest) {
       adjacencyTolerance: difficultySettings.adjacencyTolerance,
     }
 
+    console.log('🎮 [Vector Maze Start] レスポンス:', response)
     return NextResponse.json(response)
   } catch (error: any) {
+    console.error('❌ [Vector Maze Start] エラー発生:', error)
+
     if (error instanceof z.ZodError) {
       return NextResponse.json(
         { error: 'Invalid request data', details: error.errors },

@@ -2,68 +2,66 @@ import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { processSurvivalAnswer } from '@/lib/survival-logic'
 
-// Request validation schema
-const AnswerSchema = z.object({
-  gameId: z.string().min(1, 'Game ID is required'),
-  selectedWord: z
-    .string()
-    .min(1, 'Selected word is required')
-    .max(50, 'Selected word too long'),
+const AnswerRequestSchema = z.object({
+  gameId: z.string().uuid(),
+  selectedWord: z.string().min(1).max(50),
 })
 
 export async function POST(request: NextRequest) {
-  try {
-    // Parse request body
-    const body = await request.json()
+  console.log('🎯 [Survival Answer] API呼び出し開始')
 
-    // Validate input
-    const result = AnswerSchema.safeParse(body)
-    if (!result.success) {
+  try {
+    const body = await request.json()
+    console.log('🎯 [Survival Answer] リクエストボディ:', body)
+
+    const validatedData = AnswerRequestSchema.parse(body)
+    console.log('🎯 [Survival Answer] バリデーション成功:', validatedData)
+
+    // Process the answer
+    console.log('🎯 [Survival Answer] 回答処理開始...', {
+      gameId: validatedData.gameId,
+      selectedWord: validatedData.selectedWord,
+    })
+
+    const result = await processSurvivalAnswer(
+      validatedData.gameId,
+      validatedData.selectedWord
+    )
+
+    console.log('🎯 [Survival Answer] 回答処理完了:', {
+      isCorrect: result.isCorrect,
+      score: result.score,
+      lives: result.lives,
+      stage: result.stage,
+      isGameOver: result.isGameOver,
+      gameOverReason: result.gameOverReason,
+      correctAnswer: result.correctAnswer,
+    })
+
+    const response = {
+      isCorrect: result.isCorrect,
+      correctAnswer: result.correctAnswer,
+      score: result.score,
+      lives: result.lives,
+      stage: result.stage,
+      isGameOver: result.isGameOver,
+      gameOverReason: result.gameOverReason,
+    }
+
+    console.log('🎯 [Survival Answer] レスポンス:', response)
+    return NextResponse.json(response)
+  } catch (error) {
+    console.error('❌ [Survival Answer] エラー発生:', error)
+
+    if (error instanceof z.ZodError) {
       return NextResponse.json(
-        {
-          error: 'Invalid input',
-          details: result.error.errors,
-        },
+        { error: 'Invalid request data', details: error.errors },
         { status: 400 }
       )
     }
 
-    const { gameId, selectedWord } = result.data
-
-    // Process the answer
-    const answerResult = await processSurvivalAnswer(gameId, selectedWord)
-
-    // Return result
-    return NextResponse.json({
-      isCorrect: answerResult.isCorrect,
-      correctAnswer: answerResult.correctAnswer,
-      score: answerResult.score,
-      lives: answerResult.lives,
-      stage: answerResult.stage,
-      isGameOver: answerResult.isGameOver,
-      gameOverReason: answerResult.gameOverReason,
-    })
-  } catch (error) {
-    console.error('Error processing survival answer:', error)
-
-    // Return appropriate error response
-    if (error instanceof Error) {
-      if (error.message.includes('Game not found')) {
-        return NextResponse.json({ error: 'Game not found' }, { status: 404 })
-      }
-
-      if (error.message.includes('already over')) {
-        return NextResponse.json(
-          { error: 'Game is already over' },
-          { status: 400 }
-        )
-      }
-
-      return NextResponse.json({ error: error.message }, { status: 500 })
-    }
-
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: 'Internal server error', details: (error as any)?.message },
       { status: 500 }
     )
   }

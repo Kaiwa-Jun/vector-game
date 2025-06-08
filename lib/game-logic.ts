@@ -75,7 +75,10 @@ export function getDifficultySettings(
 export async function generateWordPair(
   difficulty: 'easy' | 'medium' | 'hard'
 ): Promise<WordPair> {
+  console.log('🎮 [Game Logic] 単語ペア生成開始:', difficulty)
+
   const settings = getDifficultySettings(difficulty)
+  console.log('🎮 [Game Logic] 難易度設定:', settings)
 
   try {
     let startWord: string = 'cat'
@@ -134,14 +137,18 @@ export async function generateWordPair(
       similarity = randomPair?.similarity || 0.1
     }
 
-    return {
+    const result = {
       startWord,
       goalWord,
       targetSimilarity: settings.targetSimilarity,
       requiredIntermediateWords: settings.requiredIntermediateWords,
     }
+
+    console.log('🎮 [Game Logic] 単語ペア生成完了:', result)
+    return result
   } catch (error) {
-    throw error
+    console.error('❌ [Game Logic] 単語ペア生成エラー:', error)
+    throw new Error('Failed to generate word pair')
   }
 }
 
@@ -154,9 +161,17 @@ export async function validateWordChain(
   goalWord: string,
   adjacencyTolerance: number
 ): Promise<WordChainValidation> {
+  console.log('🎮 [Game Logic] ワードチェーン検証開始:', {
+    startWord,
+    intermediateWords,
+    goalWord,
+    adjacencyTolerance,
+  })
   try {
     const fullChain = [startWord, ...intermediateWords, goalWord]
     const similarities: number[] = []
+
+    console.log('🎮 [Game Logic] 完全チェーン:', fullChain)
 
     // Check each adjacent pair
     for (let i = 0; i < fullChain.length - 1; i++) {
@@ -173,6 +188,10 @@ export async function validateWordChain(
 
       const similarity = await checkWordSimilarity(word1, word2)
       similarities.push(similarity)
+
+      console.log(
+        `🎮 [Game Logic] ${word1} → ${word2}: ${(similarity * 100).toFixed(1)}%`
+      )
 
       // Check if similarity is within acceptable range
       // We want some similarity but not too much (to make it challenging)
@@ -201,12 +220,15 @@ export async function validateWordChain(
     // Check if the final similarity reaches the goal
     const finalSimilarity = similarities[similarities.length - 1] || 0
 
-    return {
+    const result = {
       isValid: true,
       similarities,
     }
+
+    console.log('🎮 [Game Logic] ワードチェーン検証完了:', result)
+    return result
   } catch (error) {
-    console.error('Error validating word chain:', error)
+    console.error('❌ [Game Logic] ワードチェーン検証エラー:', error)
     return {
       isValid: false,
       message: 'Error validating word chain',
@@ -297,7 +319,13 @@ export function calculateFinalScore(
   isSuccess: boolean,
   wordChainValidation?: WordChainValidation
 ): ScoreResult {
+  console.log('🎮 [Game Logic] スコア計算開始:', {
+    isSuccess,
+    moves: gameData.moves?.length,
+  })
+
   if (!isSuccess) {
+    console.log('🎮 [Game Logic] 失敗のためスコア0')
     return {
       score: 0,
       isSuccess: false,
@@ -332,8 +360,11 @@ export function calculateFinalScore(
   // Ensure minimum score of 1 for successful completion
   score = Math.max(1, Math.round(score))
 
-  return {
+  const result = {
     score,
     isSuccess: true,
   }
+
+  console.log('🎮 [Game Logic] スコア計算完了:', result)
+  return result
 }

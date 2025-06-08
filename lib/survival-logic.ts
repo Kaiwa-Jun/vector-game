@@ -103,9 +103,12 @@ async function generateRandomBaseWord(): Promise<string> {
  * Start a new survival game with system-generated base word
  */
 export async function startSurvivalGame(): Promise<SurvivalGameState> {
+  console.log('🎯 [Survival Logic] ゲーム開始処理開始')
+
   try {
     // Generate random base word
     const baseWord = await generateRandomBaseWord()
+    console.log('🎯 [Survival Logic] 基準語生成:', baseWord)
 
     // Create game session in database
     const session = await createGameSession('survival', {
@@ -126,7 +129,7 @@ export async function startSurvivalGame(): Promise<SurvivalGameState> {
       // Don't fail the game start if analytics fail
     }
 
-    return {
+    const gameState = {
       gameId: session.id,
       stage: 1,
       score: 0,
@@ -136,8 +139,14 @@ export async function startSurvivalGame(): Promise<SurvivalGameState> {
       difficulty: DifficultyLevel.EASY,
       isGameOver: false,
     }
+
+    console.log('🎯 [Survival Logic] ゲーム開始完了:', {
+      gameId: session.id,
+      baseWord,
+    })
+    return gameState
   } catch (error) {
-    console.error('Error starting survival game:', error)
+    console.error('❌ [Survival Logic] ゲーム開始エラー:', error)
     throw new Error('Failed to start survival game')
   }
 }
@@ -179,12 +188,21 @@ export async function getSurvivalGameState(
 export async function generateSurvivalRound(
   gameId: string
 ): Promise<SurvivalRound> {
+  console.log('🎯 [Survival Logic] ラウンド生成開始:', gameId)
+
   try {
     const gameState = await getSurvivalGameState(gameId)
 
     if (!gameState || gameState.isGameOver) {
       throw new Error('Game not found or already over')
     }
+
+    console.log(
+      '🎯 [Survival Logic] 基準語:',
+      gameState.currentBaseWord,
+      'ステージ:',
+      gameState.stage
+    )
 
     // Get similar words (correct answers)
     const { similarWords, error } = await findSimilarWords(
@@ -223,6 +241,12 @@ export async function generateSurvivalRound(
     // Shuffle choices
     const shuffledChoices = choices.sort(() => Math.random() - 0.5)
 
+    console.log(
+      '🎯 [Survival Logic] 選択肢生成完了:',
+      shuffledChoices.length,
+      '個'
+    )
+
     return {
       baseWord: gameState.currentBaseWord,
       choices: shuffledChoices,
@@ -231,7 +255,7 @@ export async function generateSurvivalRound(
       score: gameState.score,
     }
   } catch (error) {
-    console.error('Error generating survival round:', error)
+    console.error('❌ [Survival Logic] ラウンド生成エラー:', error)
     throw new Error('Failed to generate round')
   }
 }
@@ -243,6 +267,8 @@ export async function processSurvivalAnswer(
   gameId: string,
   selectedWord: string
 ): Promise<SurvivalAnswerResult> {
+  console.log('🎯 [Survival Logic] 回答処理開始:', selectedWord)
+
   try {
     const gameState = await getSurvivalGameState(gameId)
 
@@ -259,6 +285,8 @@ export async function processSurvivalAnswer(
 
     const correctWords = similarWords.map(w => w.word)
     const isCorrect = correctWords.includes(selectedWord)
+
+    console.log('🎯 [Survival Logic] 回答判定:', isCorrect ? '正解' : '不正解')
 
     // Update score and lives
     let newScore = gameState.score
@@ -294,6 +322,13 @@ export async function processSurvivalAnswer(
           ? 'max_stage'
           : undefined
 
+    console.log('🎯 [Survival Logic] 更新後状態:', {
+      score: newScore,
+      lives: newLives,
+      stage: newStage,
+      isGameOver,
+    })
+
     // Update game session in database
     await updateGameSession(gameId, {
       current_stage: newStage,
@@ -317,7 +352,7 @@ export async function processSurvivalAnswer(
       gameOverReason,
     }
   } catch (error) {
-    console.error('Error processing survival answer:', error)
+    console.error('❌ [Survival Logic] 回答処理エラー:', error)
     throw new Error('Failed to process answer')
   }
 }

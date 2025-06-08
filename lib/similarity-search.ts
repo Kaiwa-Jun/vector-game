@@ -32,6 +32,8 @@ export interface SimilaritySearchResult {
  * Get embeddings for a word using OpenAI API
  */
 export async function getWordEmbedding(word: string): Promise<number[]> {
+  console.log('🔍 [Similarity Search] 埋め込み取得:', word)
+
   try {
     const openai = getOpenAIClient()
     const response = await openai.embeddings.create({
@@ -41,7 +43,7 @@ export async function getWordEmbedding(word: string): Promise<number[]> {
 
     return response.data[0]?.embedding || []
   } catch (error) {
-    console.error('Error getting embedding:', error)
+    console.error('❌ [Similarity Search] 埋め込みエラー:', error)
     throw new Error('Failed to get word embedding')
   }
 }
@@ -85,6 +87,8 @@ export async function findSimilarWords(
   limit: number = 5,
   threshold: number = 0.7
 ): Promise<SimilaritySearchResult> {
+  console.log('🔍 [Similarity Search] 類似語検索:', baseWord)
+
   try {
     // First, check if we have the word in our database
     let wordVector = await getWordVector(baseWord)
@@ -114,11 +118,13 @@ export async function findSimilarWords(
       }))
       .slice(0, limit)
 
+    console.log('🔍 [Similarity Search] 検索完了:', similarWords.length, '個')
+
     return {
       similarWords,
     }
   } catch (error) {
-    console.error('Error finding similar words:', error)
+    console.error('❌ [Similarity Search] 検索エラー:', error)
     return {
       similarWords: [],
       error: error instanceof Error ? error.message : 'Unknown error',
@@ -166,6 +172,8 @@ export async function checkWordSimilarity(
   word1: string,
   word2: string
 ): Promise<number> {
+  console.log('🔍 [Similarity Search] 類似度計算:', word1, '←→', word2)
+
   try {
     // Get embeddings for both words
     const [embedding1, embedding2] = await Promise.all([
@@ -175,9 +183,15 @@ export async function checkWordSimilarity(
 
     // Calculate cosine similarity
     const similarity = cosineSimilarity(embedding1, embedding2)
+
+    console.log(
+      '🔍 [Similarity Search] 類似度:',
+      (similarity * 100).toFixed(1) + '%'
+    )
+
     return similarity
   } catch (error) {
-    console.error('Error checking word similarity:', error)
+    console.error('❌ [Similarity Search] 類似度エラー:', error)
     return 0
   }
 }
