@@ -7,9 +7,9 @@ const nextConfig = {
   webpack: (config, { isServer }) => {
     if (isServer) {
       config.externals.push({
-        'bufferutil': 'bufferutil',
+        bufferutil: 'bufferutil',
         'utf-8-validate': 'utf-8-validate',
-        'ws': 'ws',
+        ws: 'ws',
       })
     }
     return config

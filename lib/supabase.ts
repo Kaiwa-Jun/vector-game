@@ -54,7 +54,7 @@ export async function getPopularWords(
   limit: number = 20
 ): Promise<PopularWord[]> {
   checkSupabaseConfig()
-  
+
   const { data, error } = await supabase
     .from('popular_words')
     .select('*')
@@ -76,7 +76,7 @@ export async function getOrCreateVector(
   embedding?: number[]
 ): Promise<Vector> {
   checkSupabaseConfig()
-  
+
   // First try to get existing vector
   const { data: existingVector, error: selectError } = await supabase
     .from('vectors')
@@ -120,7 +120,7 @@ export async function createVectorMazeSession(
   gameData: any
 ): Promise<GameSession> {
   checkSupabaseConfig()
-  
+
   const sessionData: GameSessionInsert = {
     game_type: 'vector-maze',
     score: 0,
@@ -147,7 +147,7 @@ export async function getVectorMazeSession(
   gameId: string
 ): Promise<GameSession | null> {
   checkSupabaseConfig()
-  
+
   const { data, error } = await supabase
     .from('game_sessions')
     .select('*')
@@ -171,7 +171,7 @@ export async function updateVectorMazeSession(
   score?: number
 ): Promise<GameSession> {
   checkSupabaseConfig()
-  
+
   const updates: GameSessionUpdate = {
     session_data: sessionData,
     updated_at: new Date().toISOString(),
@@ -205,7 +205,7 @@ export async function cacheWordSimilarity(
   similarity: number
 ): Promise<void> {
   checkSupabaseConfig()
-  
+
   const { error } = await supabase.from('word_similarities').upsert({
     word1,
     word2,
@@ -225,7 +225,7 @@ export async function getCachedSimilarity(
   word2: string
 ): Promise<number | null> {
   checkSupabaseConfig()
-  
+
   const { data, error } = await supabase
     .from('word_similarities')
     .select('similarity_score')
