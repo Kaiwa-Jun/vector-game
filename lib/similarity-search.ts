@@ -3,10 +3,20 @@ import { supabase } from './supabase'
 import { getWordVector, saveWordVector, searchSimilarWords } from './database'
 import type { MatchVectorsResult } from './supabase'
 
-// OpenAI client setup
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-})
+// Lazy OpenAI client initialization
+let openaiClient: OpenAI | null = null
+
+function getOpenAIClient(): OpenAI {
+  if (!openaiClient) {
+    if (!process.env.OPENAI_API_KEY) {
+      throw new Error('OPENAI_API_KEY environment variable is required')
+    }
+    openaiClient = new OpenAI({
+      apiKey: process.env.OPENAI_API_KEY,
+    })
+  }
+  return openaiClient
+}
 
 export interface SimilarWord {
   word: string
@@ -23,6 +33,7 @@ export interface SimilaritySearchResult {
  */
 export async function getWordEmbedding(word: string): Promise<number[]> {
   try {
+    const openai = getOpenAIClient()
     const response = await openai.embeddings.create({
       model: 'text-embedding-3-small',
       input: word,
