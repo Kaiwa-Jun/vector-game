@@ -12,7 +12,9 @@ const customJestConfig = {
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/$1',
   },
-  transformIgnorePatterns: ['node_modules/(?!(@supabase|openai)/)'],
+  transformIgnorePatterns: [
+    'node_modules/(?!(@supabase|openai)/)'
+  ],
   testPathIgnorePatterns: [
     '<rootDir>/.next/',
     '<rootDir>/node_modules/',

@@ -1,12 +1,19 @@
 import OpenAI from 'openai'
 
-if (!process.env.OPENAI_API_KEY) {
-  throw new Error('OPENAI_API_KEY environment variable is required')
-}
+let openai: OpenAI
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-})
+function getOpenAIClient(): OpenAI {
+  if (!openai) {
+    if (!process.env.OPENAI_API_KEY) {
+      throw new Error('OPENAI_API_KEY environment variable is required')
+    }
+    
+    openai = new OpenAI({
+      apiKey: process.env.OPENAI_API_KEY,
+    })
+  }
+  return openai
+}
 
 const EMBEDDING_MODEL = 'text-embedding-3-small'
 const MAX_RETRIES = 3
@@ -27,7 +34,8 @@ export async function getEmbedding(
   retries = 0
 ): Promise<number[]> {
   try {
-    const response = await openai.embeddings.create({
+    const client = getOpenAIClient()
+    const response = await client.embeddings.create({
       model: EMBEDDING_MODEL,
       input: text,
       encoding_format: 'float',
@@ -56,7 +64,8 @@ export async function batchGetEmbeddings(texts: string[]): Promise<number[][]> {
   }
 
   try {
-    const response = await openai.embeddings.create({
+    const client = getOpenAIClient()
+    const response = await client.embeddings.create({
       model: EMBEDDING_MODEL,
       input: texts,
       encoding_format: 'float',
