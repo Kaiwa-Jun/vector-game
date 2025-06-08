@@ -7,6 +7,10 @@ export interface GameStartResponse {
   startWord: string
   goalWord: string
   targetSimilarity: number
+  requiredIntermediateWords: number
+  maxMoves: number
+  timeLimit: number
+  adjacencyTolerance: number
 }
 
 export interface SimilarityRequest {
@@ -21,6 +25,24 @@ export interface SimilarityResponse {
   score: number
 }
 
+export interface IntermediateWordRequest {
+  gameId: string
+  word: string
+  position: number
+}
+
+export interface IntermediateWordResponse {
+  isValid: boolean
+  similarity?: number
+  message?: string
+  isComplete: boolean
+  chainValidation?: {
+    isValid: boolean
+    similarities?: number[]
+    message?: string
+  }
+}
+
 export interface GameFinishRequest {
   gameId: string
 }
@@ -30,6 +52,8 @@ export interface GameFinishResponse {
   totalMoves: number
   timeElapsed: number
   isSuccess: boolean
+  wordChain?: string[]
+  similarities?: number[]
 }
 
 export interface VectorData {
@@ -42,10 +66,13 @@ export interface VectorMazeGameData {
   startWord: string
   goalWord: string
   targetSimilarity: number
+  requiredIntermediateWords: number
+  intermediateWords: string[]
   moves: string[]
   isActive: boolean
   startTime: string
   endTime?: string
+  difficulty: 'easy' | 'medium' | 'hard'
 }
 
 export interface GameSession {

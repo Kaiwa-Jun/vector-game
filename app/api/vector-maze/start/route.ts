@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
-import { generateWordPair } from '@/lib/game-logic'
+import { generateWordPair, getDifficultySettings } from '@/lib/game-logic'
 import { createVectorMazeSession } from '@/lib/supabase'
 import {
   GameStartRequest,
@@ -19,15 +19,19 @@ export async function POST(request: NextRequest) {
 
     // Generate word pair based on difficulty
     const wordPair = await generateWordPair(validatedData.difficulty)
+    const difficultySettings = getDifficultySettings(validatedData.difficulty)
 
     // Create game session data
     const gameData: VectorMazeGameData = {
       startWord: wordPair.startWord,
       goalWord: wordPair.goalWord,
       targetSimilarity: wordPair.targetSimilarity,
+      requiredIntermediateWords: wordPair.requiredIntermediateWords,
+      intermediateWords: [], // Array to store player's intermediate words
       moves: [],
       isActive: true,
       startTime: new Date().toISOString(),
+      difficulty: validatedData.difficulty,
     }
 
     // Create game session
@@ -38,6 +42,10 @@ export async function POST(request: NextRequest) {
       startWord: wordPair.startWord,
       goalWord: wordPair.goalWord,
       targetSimilarity: wordPair.targetSimilarity,
+      requiredIntermediateWords: wordPair.requiredIntermediateWords,
+      maxMoves: difficultySettings.maxMoves,
+      timeLimit: difficultySettings.timeLimit,
+      adjacencyTolerance: difficultySettings.adjacencyTolerance,
     }
 
     return NextResponse.json(response)

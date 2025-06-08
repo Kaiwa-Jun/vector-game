@@ -6,6 +6,11 @@ jest.mock('@/lib/supabase', () => ({
   updateGameSession: jest.fn(),
 }))
 
+// Mock similarity-search
+jest.mock('@/lib/similarity-search', () => ({
+  checkWordSimilarity: jest.fn().mockResolvedValue(0.8),
+}))
+
 import {
   getDifficultySettings,
   isGoalReached,
@@ -20,20 +25,24 @@ describe('Game logic (unit tests)', () => {
       expect(settings).toHaveProperty('targetSimilarity')
       expect(settings).toHaveProperty('maxMoves')
       expect(settings).toHaveProperty('timeLimit')
-      expect(settings.targetSimilarity).toBeGreaterThan(0.7)
+      expect(settings).toHaveProperty('adjacencyTolerance')
+      expect(settings).toHaveProperty('requiredIntermediateWords')
+      expect(settings.targetSimilarity).toBe(0.4)
+      expect(settings.requiredIntermediateWords).toBe(2)
     })
 
     it('should return medium difficulty settings', () => {
       const settings = getDifficultySettings('medium')
 
-      expect(settings.targetSimilarity).toBeLessThan(0.7)
-      expect(settings.targetSimilarity).toBeGreaterThan(0.5)
+      expect(settings.targetSimilarity).toBe(0.35)
+      expect(settings.requiredIntermediateWords).toBe(3)
     })
 
     it('should return hard difficulty settings', () => {
       const settings = getDifficultySettings('hard')
 
-      expect(settings.targetSimilarity).toBeLessThan(0.5)
+      expect(settings.targetSimilarity).toBe(0.3)
+      expect(settings.requiredIntermediateWords).toBe(4)
     })
 
     it('should default to medium for invalid difficulty', () => {
@@ -44,18 +53,39 @@ describe('Game logic (unit tests)', () => {
   })
 
   describe('isGoalReached', () => {
-    it('should return true when similarity meets target', () => {
-      const result = isGoalReached(0.85, 0.8)
+    it('should return true when word chain is valid and meets target', () => {
+      const wordChainValidation = {
+        isValid: true,
+        similarities: [0.5, 0.6, 0.85],
+      }
+      const result = isGoalReached(wordChainValidation, 0.8)
       expect(result).toBe(true)
     })
 
-    it('should return false when similarity is below target', () => {
-      const result = isGoalReached(0.75, 0.8)
+    it('should return false when word chain is invalid', () => {
+      const wordChainValidation = {
+        isValid: false,
+        similarities: [0.5, 0.6, 0.85],
+      }
+      const result = isGoalReached(wordChainValidation, 0.8)
+      expect(result).toBe(false)
+    })
+
+    it('should return false when final similarity is below target', () => {
+      const wordChainValidation = {
+        isValid: true,
+        similarities: [0.5, 0.6, 0.75],
+      }
+      const result = isGoalReached(wordChainValidation, 0.8)
       expect(result).toBe(false)
     })
 
     it('should handle exact match', () => {
-      const result = isGoalReached(0.8, 0.8)
+      const wordChainValidation = {
+        isValid: true,
+        similarities: [0.5, 0.6, 0.8],
+      }
+      const result = isGoalReached(wordChainValidation, 0.8)
       expect(result).toBe(true)
     })
   })
@@ -69,9 +99,17 @@ describe('Game logic (unit tests)', () => {
         startTime: new Date(Date.now() - 60000).toISOString(), // 1 minute ago
         targetSimilarity: 0.8,
         isActive: true,
+        requiredIntermediateWords: 2,
+        intermediateWords: ['animal', 'pet'],
+        difficulty: 'medium' as const,
       }
 
-      const result = calculateFinalScore(gameData, true)
+      const wordChainValidation = {
+        isValid: true,
+        similarities: [0.5, 0.6, 0.8],
+      }
+
+      const result = calculateFinalScore(gameData, true, wordChainValidation)
 
       expect(result).toHaveProperty('score')
       expect(result).toHaveProperty('isSuccess')
@@ -87,6 +125,9 @@ describe('Game logic (unit tests)', () => {
         startTime: new Date(Date.now() - 60000).toISOString(),
         targetSimilarity: 0.8,
         isActive: true,
+        requiredIntermediateWords: 2,
+        intermediateWords: ['animal', 'pet'],
+        difficulty: 'medium' as const,
       }
 
       const result = calculateFinalScore(gameData, false)
@@ -103,19 +144,30 @@ describe('Game logic (unit tests)', () => {
         startTime: new Date(Date.now() - 60000).toISOString(),
         targetSimilarity: 0.8,
         isActive: true,
+        requiredIntermediateWords: 2,
+        intermediateWords: ['animal', 'pet'],
+        difficulty: 'medium' as const,
       }
 
       const gameData2 = {
         startWord: 'cat',
         goalWord: 'dog',
-        moves: ['cat', 'dog', 'animal', 'pet', 'mammal'],
+        moves: ['cat', 'dog', 'animal', 'pet', 'mammal', 'creature', 'being'],
         startTime: new Date(Date.now() - 60000).toISOString(),
         targetSimilarity: 0.8,
         isActive: true,
+        requiredIntermediateWords: 2,
+        intermediateWords: ['animal', 'pet'],
+        difficulty: 'medium' as const,
       }
 
-      const result1 = calculateFinalScore(gameData1, true)
-      const result2 = calculateFinalScore(gameData2, true)
+      const wordChainValidation = {
+        isValid: true,
+        similarities: [0.5, 0.6, 0.8],
+      }
+
+      const result1 = calculateFinalScore(gameData1, true, wordChainValidation)
+      const result2 = calculateFinalScore(gameData2, true, wordChainValidation)
 
       expect(result1.score).toBeGreaterThan(result2.score)
     })
@@ -128,6 +180,9 @@ describe('Game logic (unit tests)', () => {
         startTime: new Date(Date.now() - 30000).toISOString(), // 30 seconds ago
         targetSimilarity: 0.8,
         isActive: true,
+        requiredIntermediateWords: 2,
+        intermediateWords: ['animal', 'pet'],
+        difficulty: 'medium' as const,
       }
 
       const gameData2 = {
@@ -137,10 +192,18 @@ describe('Game logic (unit tests)', () => {
         startTime: new Date(Date.now() - 120000).toISOString(), // 2 minutes ago
         targetSimilarity: 0.8,
         isActive: true,
+        requiredIntermediateWords: 2,
+        intermediateWords: ['animal', 'pet'],
+        difficulty: 'medium' as const,
       }
 
-      const result1 = calculateFinalScore(gameData1, true)
-      const result2 = calculateFinalScore(gameData2, true)
+      const wordChainValidation = {
+        isValid: true,
+        similarities: [0.5, 0.6, 0.8],
+      }
+
+      const result1 = calculateFinalScore(gameData1, true, wordChainValidation)
+      const result2 = calculateFinalScore(gameData2, true, wordChainValidation)
 
       expect(result1.score).toBeGreaterThan(result2.score)
     })

@@ -1,6 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
-import { calculateFinalScore } from '@/lib/game-logic'
+import {
+  calculateFinalScore,
+  validateWordChain,
+  isGoalReached,
+  getDifficultySettings,
+} from '@/lib/game-logic'
 import { getVectorMazeSession, updateVectorMazeSession } from '@/lib/supabase'
 import {
   GameFinishRequest,
@@ -27,21 +32,35 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const gameData = gameSession.session_data as unknown as VectorMazeGameData
+    const gameData = gameSession.session_data as any
 
-    if (!gameData.isActive) {
+    if (!gameData || !gameData.isActive) {
       return NextResponse.json(
         { error: 'Game is already finished' },
         { status: 400 }
       )
     }
 
-    // Check if goal was reached (game completed successfully)
-    const moves = gameData.moves || []
-    const isSuccess = !gameData.isActive || gameData.endTime !== undefined
+    // Validate the complete word chain
+    const difficultySettings = getDifficultySettings(gameData.difficulty)
+    const wordChainValidation = await validateWordChain(
+      gameData.startWord,
+      gameData.intermediateWords || [],
+      gameData.goalWord,
+      difficultySettings.adjacencyTolerance
+    )
+
+    // Check if goal was reached
+    const isSuccess =
+      wordChainValidation.isValid &&
+      isGoalReached(wordChainValidation, gameData.targetSimilarity)
 
     // Calculate final score
-    const scoreResult = calculateFinalScore(gameData, isSuccess)
+    const scoreResult = calculateFinalScore(
+      gameData,
+      isSuccess,
+      wordChainValidation
+    )
 
     // Calculate time elapsed
     const endTime = new Date()
@@ -50,8 +69,15 @@ export async function POST(request: NextRequest) {
       (endTime.getTime() - startTime.getTime()) / 1000
     )
 
+    // Create complete word chain for response
+    const wordChain = [
+      gameData.startWord,
+      ...(gameData.intermediateWords || []),
+      gameData.goalWord,
+    ]
+
     // Update game data to mark as finished
-    const finishedGameData: VectorMazeGameData = {
+    const finishedGameData = {
       ...gameData,
       isActive: false,
       endTime: endTime.toISOString(),
@@ -66,9 +92,11 @@ export async function POST(request: NextRequest) {
 
     const response: GameFinishResponse = {
       finalScore: scoreResult.score,
-      totalMoves: moves.length,
+      totalMoves: gameData.moves?.length || 0,
       timeElapsed: timeElapsed,
       isSuccess: scoreResult.isSuccess,
+      wordChain: wordChain,
+      similarities: wordChainValidation.similarities,
     }
 
     return NextResponse.json(response)
@@ -80,6 +108,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    console.error('Error finishing game:', error)
     return NextResponse.json(
       { error: 'Internal server error', details: error?.message },
       { status: 500 }

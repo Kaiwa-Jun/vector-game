@@ -1,36 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { z } from 'zod'
 import { startSurvivalGame } from '@/lib/survival-logic'
-
-// Request validation schema
-const StartGameSchema = z.object({
-  baseWord: z
-    .string()
-    .min(1, 'Base word is required')
-    .max(50, 'Base word too long'),
-})
 
 export async function POST(request: NextRequest) {
   try {
-    // Parse request body
-    const body = await request.json()
-
-    // Validate input
-    const result = StartGameSchema.safeParse(body)
-    if (!result.success) {
-      return NextResponse.json(
-        {
-          error: 'Invalid input',
-          details: result.error.errors,
-        },
-        { status: 400 }
-      )
-    }
-
-    const { baseWord } = result.data
-
-    // Start the survival game
-    const gameState = await startSurvivalGame(baseWord)
+    // Start the survival game with system-generated base word
+    const gameState = await startSurvivalGame()
 
     // Return game session information
     return NextResponse.json({

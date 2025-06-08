@@ -10,6 +10,7 @@ import {
   updateGameSession,
   getGameSession,
   incrementWordUsage,
+  getPopularWords,
 } from './database'
 import type { GameSession } from './supabase'
 
@@ -53,12 +54,59 @@ const CORRECT_ANSWER_POINTS = 100
 const STAGE_BONUS_MULTIPLIER = 10
 
 /**
- * Start a new survival game
+ * Generate a random base word for survival game
  */
-export async function startSurvivalGame(
-  baseWord: string
-): Promise<SurvivalGameState> {
+async function generateRandomBaseWord(): Promise<string> {
   try {
+    // Get popular words from database
+    const popularWords = await getPopularWords(50)
+
+    if (popularWords.length > 0) {
+      // Select a random word from popular words
+      const randomIndex = Math.floor(Math.random() * popularWords.length)
+      return popularWords[randomIndex]?.base_word || 'cat'
+    }
+
+    // Fallback to predefined words if database is empty
+    const fallbackWords = [
+      'cat',
+      'dog',
+      'car',
+      'house',
+      'book',
+      'music',
+      'food',
+      'water',
+      'tree',
+      'flower',
+      'sun',
+      'moon',
+      'computer',
+      'phone',
+      'game',
+      'love',
+      'happy',
+      'beautiful',
+      'strong',
+      'fast',
+    ]
+
+    const randomIndex = Math.floor(Math.random() * fallbackWords.length)
+    return fallbackWords[randomIndex] || 'cat'
+  } catch (error) {
+    console.error('Error generating random base word:', error)
+    return 'cat' // Ultimate fallback
+  }
+}
+
+/**
+ * Start a new survival game with system-generated base word
+ */
+export async function startSurvivalGame(): Promise<SurvivalGameState> {
+  try {
+    // Generate random base word
+    const baseWord = await generateRandomBaseWord()
+
     // Create game session in database
     const session = await createGameSession('survival', {
       baseWord,
