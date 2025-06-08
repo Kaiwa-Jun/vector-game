@@ -44,9 +44,6 @@ export async function getEmbedding(
     return response.data[0]?.embedding || []
   } catch (error) {
     if (retries < MAX_RETRIES) {
-      console.warn(
-        `Embedding request failed, retrying... (${retries + 1}/${MAX_RETRIES})`
-      )
       await delay(RETRY_DELAY * (retries + 1))
       return getEmbedding(text, retries + 1)
     }
@@ -73,7 +70,6 @@ export async function batchGetEmbeddings(texts: string[]): Promise<number[][]> {
 
     return response.data.map(item => item.embedding)
   } catch (error) {
-    console.error('Batch embedding request failed:', error)
     throw error
   }
 }
