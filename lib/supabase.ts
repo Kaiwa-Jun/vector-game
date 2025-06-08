@@ -1,10 +1,14 @@
 import { createClient } from '@supabase/supabase-js'
 import type { Database } from './database.types'
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
-export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey)
+// Create client with fallback values for build time
+export const supabase = createClient<Database>(
+  supabaseUrl || 'https://placeholder.supabase.co',
+  supabaseAnonKey || 'placeholder-key'
+)
 
 // Database types (using generated types from Supabase)
 export type Vector = Database['public']['Tables']['vectors']['Row']
@@ -35,11 +39,22 @@ export type MatchVectorsResult =
   Database['public']['Functions']['match_vectors']['Returns'][0]
 
 /**
+ * Check if Supabase is properly configured
+ */
+function checkSupabaseConfig() {
+  if (!supabaseUrl || !supabaseAnonKey) {
+    throw new Error('Supabase environment variables are not configured')
+  }
+}
+
+/**
  * Get popular words for game word selection
  */
 export async function getPopularWords(
   limit: number = 20
 ): Promise<PopularWord[]> {
+  checkSupabaseConfig()
+  
   const { data, error } = await supabase
     .from('popular_words')
     .select('*')
@@ -60,6 +75,8 @@ export async function getOrCreateVector(
   word: string,
   embedding?: number[]
 ): Promise<Vector> {
+  checkSupabaseConfig()
+  
   // First try to get existing vector
   const { data: existingVector, error: selectError } = await supabase
     .from('vectors')
@@ -102,6 +119,8 @@ export async function getOrCreateVector(
 export async function createVectorMazeSession(
   gameData: any
 ): Promise<GameSession> {
+  checkSupabaseConfig()
+  
   const sessionData: GameSessionInsert = {
     game_type: 'vector-maze',
     score: 0,
@@ -127,6 +146,8 @@ export async function createVectorMazeSession(
 export async function getVectorMazeSession(
   gameId: string
 ): Promise<GameSession | null> {
+  checkSupabaseConfig()
+  
   const { data, error } = await supabase
     .from('game_sessions')
     .select('*')
@@ -149,6 +170,8 @@ export async function updateVectorMazeSession(
   sessionData: any,
   score?: number
 ): Promise<GameSession> {
+  checkSupabaseConfig()
+  
   const updates: GameSessionUpdate = {
     session_data: sessionData,
     updated_at: new Date().toISOString(),
@@ -181,6 +204,8 @@ export async function cacheWordSimilarity(
   word2: string,
   similarity: number
 ): Promise<void> {
+  checkSupabaseConfig()
+  
   const { error } = await supabase.from('word_similarities').upsert({
     word1,
     word2,
@@ -199,6 +224,8 @@ export async function getCachedSimilarity(
   word1: string,
   word2: string
 ): Promise<number | null> {
+  checkSupabaseConfig()
+  
   const { data, error } = await supabase
     .from('word_similarities')
     .select('similarity_score')
