@@ -19,6 +19,7 @@ export async function POST(request: NextRequest) {
 
     // Get game session
     const gameSession = await getVectorMazeSession(validatedData.gameId)
+
     if (!gameSession) {
       return NextResponse.json(
         { error: 'Game session not found' },
@@ -27,6 +28,7 @@ export async function POST(request: NextRequest) {
     }
 
     const gameData = gameSession.session_data as unknown as VectorMazeGameData
+
     if (!gameData.isActive) {
       return NextResponse.json(
         { error: 'Game is already finished' },
@@ -70,9 +72,7 @@ export async function POST(request: NextRequest) {
     }
 
     return NextResponse.json(response)
-  } catch (error) {
-    console.error('Error finishing game:', error)
-
+  } catch (error: any) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(
         { error: 'Invalid request data', details: error.errors },
@@ -81,7 +81,7 @@ export async function POST(request: NextRequest) {
     }
 
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: 'Internal server error', details: error?.message },
       { status: 500 }
     )
   }

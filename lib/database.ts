@@ -23,7 +23,6 @@ export async function searchSimilarWords(
   })
 
   if (error) {
-    console.error('Error searching similar words:', error)
     throw error
   }
 
@@ -42,7 +41,6 @@ export async function getWordVector(word: string): Promise<Vector | null> {
     if (error.code === 'PGRST116') {
       return null // レコードが見つからない場合
     }
-    console.error('Error getting word vector:', error)
     throw error
   }
 
@@ -65,7 +63,6 @@ export async function saveWordVector(
     .single()
 
   if (error) {
-    console.error('Error saving word vector:', error)
     throw error
   }
 
@@ -89,7 +86,6 @@ export async function getCachedSimilarity(
     if (error.code === 'PGRST116') {
       return null // キャッシュが見つからない場合
     }
-    console.error('Error getting cached similarity:', error)
     throw error
   }
 
@@ -109,7 +105,6 @@ export async function cacheSimilarity(
   })
 
   if (error) {
-    console.error('Error caching similarity:', error)
     throw error
   }
 }
@@ -125,7 +120,6 @@ export async function getPopularWords(
     .limit(limit)
 
   if (error) {
-    console.error('Error getting popular words:', error)
     throw error
   }
 
@@ -139,7 +133,6 @@ export async function incrementWordUsage(baseWord: string): Promise<void> {
   })
 
   if (error) {
-    console.error('Error incrementing word usage:', error)
     throw error
   }
 }
@@ -159,7 +152,6 @@ export async function createGameSession(
     .single()
 
   if (error) {
-    console.error('Error creating game session:', error)
     throw error
   }
 
@@ -182,7 +174,6 @@ export async function updateGameSession(
     .single()
 
   if (error) {
-    console.error('Error updating game session:', error)
     throw error
   }
 
@@ -203,7 +194,6 @@ export async function getGameSession(
     if (error.code === 'PGRST116') {
       return null
     }
-    console.error('Error getting game session:', error)
     throw error
   }
 

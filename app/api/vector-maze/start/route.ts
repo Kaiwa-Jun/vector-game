@@ -41,9 +41,7 @@ export async function POST(request: NextRequest) {
     }
 
     return NextResponse.json(response)
-  } catch (error) {
-    console.error('Error starting game:', error)
-
+  } catch (error: any) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(
         { error: 'Invalid request data', details: error.errors },
@@ -52,7 +50,7 @@ export async function POST(request: NextRequest) {
     }
 
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: 'Internal server error', details: error?.message },
       { status: 500 }
     )
   }
